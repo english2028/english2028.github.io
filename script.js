@@ -9,6 +9,7 @@ fetch('https://openai-server-hh4m.onrender.com/checka',
 .then(data => {
  if (data.success) token = data.token;
  else alert('Sorry.');
+ //else windows.close();
 })
 .catch(error => console.error('Eroare:', error));
 
@@ -58,7 +59,7 @@ const requestFunc = () => {
   })
   .catch(error => {
    console.error("Error request:", error.message);
-   sendButton.innerText = 'Eroare...';
+   sendButton.innerText = 'Error API_KEY';
   });
  }
 }
