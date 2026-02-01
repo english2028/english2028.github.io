@@ -45,7 +45,7 @@ const requestFunc = () => {
   sendButton.innerText = 'Wait...';
   let message = { "role": "user", "content": inp.value };
   conversation.push(message);
-  axios.post('https://openai-server-KnMA.onrender.com/api/chat',
+  axios.post('https://openai-server-hh4m.onrender.com/api/chat',
   {
    messages: conversation,
    token: token
@@ -62,4 +62,5 @@ const requestFunc = () => {
   });
  }
 }
+
 
