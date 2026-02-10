@@ -1,14 +1,30 @@
-﻿let token = null;
-fetch('https://openai-server-hh4m.onrender.com/checka',
+let token = null;
+let lastAudio = null;
+let speechSpeed = 0.7;  
+
+function repeatLast() {
+  if (!lastAudio) return;
+  new Audio(lastAudio).play();
+}
+
+const API_BASE = 'https://openai-server-hh4m.onrender.com';
+const params = new URLSearchParams(window.location.search);
+
+fetch(`${API_BASE}/checka`,
 {
  method: 'POST',
  headers: { 'Content-Type': 'application/json' },
- body: JSON.stringify({ aaa: new URLSearchParams(window.location.search).get('aaa') })
+ body: JSON.stringify({
+  aaa: params.get('aaa'),
+  t: params.get('t'),
+  s: params.get('s')
+ })
 })
+
 .then(response => response.json())
 .then(data => {
  if (data.success) token = data.token;
- else alert('Scuzati - nu aveti acces...');
+ else alert('Sorry.');
 })
 .catch(error => console.error('Eroare:', error));
 
@@ -18,7 +34,6 @@ let outp = window.document.getElementById('textOutput');
 let conversation = [];
 
 let speech2text = new webkitSpeechRecognition();
-let text2speech = window.speechSynthesis;
 
 const speech = () => {
  speech2text.lang = 'en-EN';
@@ -26,15 +41,29 @@ const speech = () => {
  sendButton.innerText = 'Speak...';
 }
 
-const talk = (text) => {
- let textToTalk = new SpeechSynthesisUtterance(text);
- textToTalk.onend = function(event) {
- sendButton.innerText = 'Do you have anything else you want to say? Click here - and speak up';
- };
- textToTalk.lang = 'en-EN';
- textToTalk.rate = 0.5;
- text2speech.speak(textToTalk);
-}
+const talk = async (text) => {
+  try {
+    const res = await axios.post(`${API_BASE}/api/tts`, {
+      text: text,
+      token: token,
+      speed: speechSpeed
+    });
+
+    lastAudio = res.data.audio;
+
+    const audio = new Audio(lastAudio);
+    audio.play();
+
+    audio.onended = () => {
+      sendButton.innerText =
+        'Doriți să mai spuneți ceva? Apăsați aici - și vorbiți';
+    };
+
+  } catch (e) {
+    console.error('TTS error:', e);
+    sendButton.innerText = 'Eroare TTS';
+  }
+};
 
 speech2text.onresult = (event) => {                    
  inp.value = event.results[0][0].transcript;
@@ -45,11 +74,13 @@ const requestFunc = () => {
   sendButton.innerText = 'Wait...';
   let message = { "role": "user", "content": inp.value };
   conversation.push(message);
-  axios.post('https://openai-server-hh4m.onrender.com/api/chat',
+
+  axios.post(`${API_BASE}/api/chat`, 
   {
    messages: conversation,
    token: token
   })
+
   .then(response => {
    let aiResponse = response.data.choices[0].message.content;
    outp.value = aiResponse;
@@ -57,10 +88,8 @@ const requestFunc = () => {
    talk(aiResponse);
   })
   .catch(error => {
-   console.error("Error request:", error.message);
-   sendButton.innerText = 'Error API_KEY';
+   console.error("Error request:", error);
+   sendButton.innerText = 'Eroare...';
   });
  }
 }
-
-
