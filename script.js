@@ -31,7 +31,51 @@ fetch(`${API_BASE}/checka`,
 let sendButton = window.document.getElementById('sendButton');
 let inp = window.document.getElementById('textInput');
 let outp = window.document.getElementById('textOutput');
-let conversation = [];
+
+const schoolClass = document.getElementById('schoolClass');
+
+function createInitialPrompt() {
+  const selectedClass = schoolClass.value;
+
+  return `
+You are a friendly English teacher.
+
+You are speaking with a schoolboy from ${selectedClass} grade.
+
+Adapt your vocabulary, questions, and explanations
+to the level of a schoolboy in ${selectedClass} grade.
+
+Use clear and easy-to-understand sentences.
+
+Ask short and engaging questions.
+
+Gently correct the schoolboy's mistakes.
+
+Encourage the schoolboy to speak in English.
+
+Continue the conversation in English.
+`;
+}
+
+let conversation = [
+  {
+    role: "system",
+    content: createInitialPrompt()
+  }
+];
+
+schoolClass.addEventListener('change', () => {
+  conversation = [
+    {
+      role: "system",
+      content: createInitialPrompt()
+    }
+  ];
+
+  inp.value = '';
+  outp.value = '';
+  lastAudio = null;
+});
 
 let speech2text = new webkitSpeechRecognition();
 
